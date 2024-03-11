@@ -252,3 +252,172 @@ In this way, the main function takes a domain name from the user, parses the DNS
 7. fmt.Printf(RRToString(answer)): Bu satırda, her bir DNS kaydını metin formatına dönüştürmek için RRToString fonksiyonunu çağırıp çıktısını ekrana yazdırıyor.
 
 Bu şekilde, main fonksiyonu kullanıcıdan bir domain adı alarak bu domain adına ait DNS kayıtlarını çözümleyip ekrana yazdırıyor. 
+
+# Dns Server
+
+```go
+type dnsHandler struct{}
+
+func (dh *dnsHandler) ServeDNS(rw dns.ResponseWriter, r *dns.Msg) {
+	msg := new(dns.Msg)
+	msg.SetReply(r)
+	msg.Authoritative = true
+
+	for _, question := range r.Question {
+		answer := DNS_Resolver(question.Name, question.Qtype)
+		msg.Answer = append(msg.Answer, answer...)
+	}
+	rw.WriteMsg(msg)
+}
+```
+
+----- ENGLISH ------
+
+1. type dnsHandler struct{}: This line defines a structure (struct) by creating a type called dnsHandler. This structure can contain a specific method that handles DNS requests.
+
+2. func (dh *dnsHandler) ServeDNS(rw dns.ResponseWriter, r *dns.Msg) {: This line defines a function called ServeDNS, which is a method of type dnsHandler. This function is used to process DNS requests and takes two arguments: a write interface of type dns.ResponseWriter and a DNS message of type *dns.Msg.
+
+3. msg := new(dns.Msg): This line creates a new DNS message of type dns.Msg.
+
+4. msg.SetReply(r): This line sets the generated msg as a response. This indicates that it will respond to the incoming request.
+
+5. msg.Authoritative = true: This line specifies that the DNS response is authorized.
+
+6. for _, question := range r.Question { ... }: This loop processes each of the incoming DNS requests. r.Question must be an array containing the questions in the incoming DNS request.
+
+7. answer := DNS_Resolver(question.Name, question.Qtype): This line resolves the answer to the DNS query using the DNS_Resolver function. The function takes the queried domain name and query type and returns the appropriate answers to that query.
+
+8. msg.Answer = append(msg.Answer, answer...): This line appends the resolved answers to the DNS message's list of answers.
+
+9. rw.WriteMsg(msg): This line sends the generated DNS response through the given dns.ResponseWriter.
+
+----- TÜRKÇE ------
+
+1. type dnsHandler struct{}: Bu satır, dnsHandler adında bir tür oluşturarak bir yapı (struct) tanımlar. Bu yapı, DNS isteklerini işleyen belirli bir yöntemi içerebilir.
+
+2. func (dh *dnsHandler) ServeDNS(rw dns.ResponseWriter, r *dns.Msg) {: Bu satır, dnsHandler türünde bir yöntem olan ServeDNS adında bir fonksiyon tanımlar. Bu fonksiyon, DNS isteklerini işlemek için kullanılır ve iki argüman alır: dns.ResponseWriter türünde bir yazma arabirimi ve *dns.Msg türünde bir DNS mesajı.
+
+3. msg := new(dns.Msg): Bu satır, yeni bir dns.Msg türünde bir DNS mesajı oluşturur.
+
+4. msg.SetReply(r): Bu satır, oluşturulan msg'yi bir yanıt olarak ayarlar. Bu, gelen isteğe yanıt vereceğini belirtir.
+
+5. msg.Authoritative = true: Bu satır, DNS yanıtının yetkili olduğunu belirtir.
+
+6. for _, question := range r.Question { ... }: Bu döngü, gelen DNS isteklerinin her birini işler. r.Question, gelen DNS isteğindeki soruları içeren bir dizi olmalıdır.
+
+7. answer := DNS_Resolver(question.Name, question.Qtype): Bu satır, DNS_Resolver fonksiyonunu kullanarak DNS sorgusunun yanıtını çözer. Fonksiyon, sorulan alan adı ve sorgu türünü alır ve bu sorguya uygun yanıtları döndürür.
+
+8. msg.Answer = append(msg.Answer, answer...): Bu satır, çözülen yanıtları DNS mesajının yanıtlar listesine ekler.
+
+9. rw.WriteMsg(msg): Bu satır, oluşturulan DNS yanıtını verilen dns.ResponseWriter aracılığıyla gönderir.
+
+```go
+func DNS_Server_Start() {
+	handler := new(dnsHandler)
+
+	server := &dns.Server{
+		Addr:      ":53",
+		Net:       "udp",
+		Handler:   handler,
+		UDPSize:   65535,
+		ReusePort: true,
+	}
+
+	fmt.Println("Start a DNS server on port 53!")
+
+	err := server.ListenAndServe()
+
+	if err != nil {
+		fmt.Printf("Failed to start server: %s\n", err.Error())
+	}
+}
+```
+------ ENGLISH ------
+
+1. We create a new DNS handler called `dnsHandler`. This handler represents the structure that will process and respond to incoming DNS requests.
+
+2. We create a DNS server called `dns.Server`. This server will listen for incoming UDP packets on the specified IP address and port number and process them through `dnsHandler`.
+
+3. The configuration of the server is as follows:
+   - `Addr`: ":53" specifies that the server listens on port number 53.
+   - `Net`: "udp" indicates that the server will use the UDP protocol.
+   - `Handler`: The `dnsHandler` object specifies the structure that will handle incoming requests.
+   - `UDPSize`: 65535 specifies the maximum UDP packet size.
+   - `ReusePort`: true allows running multiple servers on the same port.
+
+4. `Start a DNS server on port 53!" is printed on the screen to indicate that the server is started.
+
+5. The `server.ListenAndServe()` method starts the server and starts listening for incoming requests.
+
+6. If the server fails to start, an error message is printed to the screen and the user is notified.
+
+This function starts a DNS server on the specified port and listens for incoming DNS requests. 
+
+
+----- TÜRKÇE ------
+
+1. `dnsHandler` adında yeni bir DNS handler oluşturuyoruz. Bu handler, gelen DNS isteklerini işleyecek ve yanıt verecek olan yapıyı temsil eder.
+
+2. `dns.Server` adında bir DNS sunucusu oluşturuluyor. Bu sunucu, belirtilen IP adresi ve port numarası üzerinden gelen UDP paketlerini dinleyecek ve bu paketlere `dnsHandler` üzerinden işlem yapacak.
+
+3. Sunucunun yapılandırması şu şekildedir:
+   - `Addr`: ":53" ifadesi, sunucunun 53 numaralı port üzerinden dinlemesini belirtir.
+   - `Net`: "udp" ifadesi, sunucunun UDP protokolünü kullanacağını belirtir.
+   - `Handler`: `dnsHandler` nesnesi, gelen istekleri işleyecek olan yapıyı belirtir.
+   - `UDPSize`: 65535 ifadesi, maksimum UDP paket boyutunu belirtir.
+   - `ReusePort`: true ifadesi, aynı port üzerinde birden fazla sunucu çalıştırılmasına olanak tanır.
+
+4. "Start a DNS server on port 53!" ifadesi ekrana yazdırılarak, sunucunun başlatıldığı bilgisi verilir.
+
+5. `server.ListenAndServe()` metodu ile sunucu başlatılır ve gelen istekler dinlenmeye başlar.
+
+6. Eğer sunucu başlatılamazsa, hata mesajı ekrana yazdırılır ve kullanıcı bilgilendirilir.
+
+Bu fonksiyon, belirtilen port üzerinde bir DNS sunucusunu başlatır ve gelen DNS isteklerini dinleyerek işlem yapar. 
+
+```go
+func main() {
+
+	var domain string
+	fmt.Printf("Enter a domain : ")
+	fmt.Scanln(&domain)
+	fmt.Println("")
+
+	answers := DNS_Resolver(domain, dns.TypeA)
+
+	for _, answer := range answers {
+		fmt.Printf(RRToString(answer))
+		fmt.Print("-------------------------\n")
+	}
+
+	var startServer string
+	fmt.Println("")
+	fmt.Printf("Do you want to start the DNS server? (Y/N): ")
+	fmt.Scanln(&startServer)
+
+	if startServer == "Y" || startServer == "y" {
+		DNS_Server_Start()
+	} else {
+		fmt.Println("DNS server not initialized.")
+	}
+
+}
+```
+
+------ ENGLISH ------
+
+1. Create a variable named `domain` and ask the user to enter a domain.
+2. For the domain entered by the user, the `DNS_Resolver` function is called to perform DNS resolution and the answers are assigned to the `answers` variable.
+3. For each answer in the `answers` array, the `RRToString` function is called to print the DNS records to the screen.
+4. An input is received to ask the user whether to start the DNS server.
+5. If the user enters "Y" or "y", the `DNS_Server_Start` function is called to start the DNS server.
+6. If the user enters "N" or "n", the message "DNS server not started." is printed on the screen.
+
+------ TÜRKÇE ------
+
+1. `domain` adında bir değişken oluşturulur ve kullanıcıdan bir domain girmesi istenir.
+2. Kullanıcının girdiği domain için `DNS_Resolver` fonksiyonu çağrılarak DNS çözümlemesi yapılır ve cevaplar `answers` değişkenine atanır.
+3. `answers` dizisindeki her cevap için `RRToString` fonksiyonu çağrılarak DNS kayıtları ekrana yazdırılır.
+4. Kullanıcıya DNS sunucusunu başlatıp başlatmayacağını sormak için bir input alınır.
+5. Eğer kullanıcı "Y" veya "y" girerse, `DNS_Server_Start` fonksiyonu çağrılarak DNS sunucusu başlatılır.
+6. Eğer kullanıcı "N" veya "n" girerse, ekrana "DNS sunucusu başlatılmadı." mesajı yazdırılır.
