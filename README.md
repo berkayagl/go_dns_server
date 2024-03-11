@@ -92,16 +92,163 @@ func dns_resolver(domain string, queryType uint) []dns.RR {
 	msg.RecursionDesired = true
 
 	client := &dns.Client{Timeout: 10 * time.Second}
+
+	response, _, err := client.Exchange(msg, "1.1.1.1:53")
+
+	if err != nil {
+		log.Fatalf("[CRITICAL ERROR] : %v ", err)
+		return nil
+	}
+
+	if response == nil {
+		log.Fatalf("[CRITICAL ERROR] : no reply from the server\n")
+		return nil
+	}
+
+	return response.Answer
 }
 ```
-- msg := new(dns.Msg): This command creates a new DNS (Domain Name System) message. DNS messages are used to help computers on the internet resolve IP addresses to domain names.
 
-- msg.SetQuestion(dns.Fqdn(domain), uint16(queryType)): This line sets a question for the DNS request.
-  The dns.Fqdn(domain) function formats the domain exactly, making it suitable for a DNS query.
-  uint16(queryType) converts it to an unsigned integer value representing the query type.
+----- ENGLISH -----
 
-- msg.RecursionDesired = true: This line indicates that we want a recursive response from the DNS server. That is, the server should search its own database and return results.
+1. func DNS_Resolver(domain string, queryType uint16) []dns.RR {: This line defines the DNS_Resolver function. This function will make a DNS query taking a domain name and query type and return the answers. The answers will be returned as a slice of type dns.RR.
 
-- client := &dns.Client{Timeout: 10 * time.Second}: This line creates the DNS client. The Timeout: 10 * time.Second parameter allows the request to timeout if we don't receive a response for 10 seconds.
+2. msg := new(dns.Msg): Creating a new DNS message.
+
+3. msg.SetQuestion(dns.Fqdn(domain), queryType): Sets the query part of the generated message. dns.Fqdn(domain) completes the domain name and queryType sets the query type.
+
+4. msg.RecursionDesired = true: The "Recursion Desired" field of the message is set to true. This determines whether the server redirects the query to other servers.
+
+5. client := &dns.Client{Timeout: 10 * time.Second}: Creates the DNS client and sets a timeout.
+
+6. response, _, err := client.Exchange(msg, "1.1.1.1.1:53"): The generated message is sent to the DNS server at IP address "1.1.1.1.1" and a response is received. Response, error and statistics information are assigned to response, _, err variables respectively.
+
+7. if err != nil { log.Fatalf("[CRITICAL ERROR] : %v ", err) return nil }: If there is an error, the error message is printed and the program terminates.
+
+8. if response == nil { log.Fatalf("[CRITICAL ERROR] : no reply from the server\n") return nil }: If there is no reply from the server, an error message is printed and the program terminates.
+
+9. return response.Answer: If there is no error and the response was received, the records in the response (Answer) are returned.
+
+In this way, the DNS_Resolver function takes a domain name and query type, makes a DNS query using this information and returns the answers.
 
 
+----- TÜRKÇE -----
+
+1. func DNS_Resolver(domain string, queryType uint16) []dns.RR {: Bu satırda, DNS_Resolver fonksiyonu tanımlanıyor. Bu fonksiyon, bir alan adı ve sorgu türü alarak DNS sorgusu yapacak ve cevapları döndürecek. Cevaplar dns.RR türünde bir dilim olarak döndürülecek.
+
+2. msg := new(dns.Msg): Yeni bir DNS mesajı oluşturuluyor.
+
+3. msg.SetQuestion(dns.Fqdn(domain), queryType): Oluşturulan mesajın sorgu kısmı belirleniyor. dns.Fqdn(domain) ile alan adı tamamlanıyor ve queryType ile sorgu türü belirleniyor.
+
+4. msg.RecursionDesired = true: Mesajın "Rekürsif İsteniyor" (Recursion Desired) alanı true olarak ayarlanıyor. Bu, sunucunun sorguyu başka sunuculara yönlendirip yönlendirmediğini belirler.
+
+5. client := &dns.Client{Timeout: 10 * time.Second}: DNS istemcisini oluşturuluyor ve bir zaman aşımı (timeout) belirleniyor.
+
+6. response, _, err := client.Exchange(msg, "1.1.1.1:53"): Oluşturulan mesaj "1.1.1.1" IP adresindeki DNS sunucusuna gönderiliyor ve cevap alınıyor. Cevap, hata ve istatistik bilgileri response, _, err değişkenlerine sırasıyla atanıyor.
+
+7. if err != nil { log.Fatalf("[CRITICAL ERROR] : %v ", err) return nil }: Eğer bir hata varsa, hata mesajı yazdırılıp program sonlandırılıyor.
+
+8. if response == nil { log.Fatalf("[CRITICAL ERROR] : no reply from the server\n") return nil }: Eğer sunucudan cevap alınamadıysa, hata mesajı yazdırılıp program sonlandırılıyor.
+
+9. return response.Answer: Eğer herhangi bir hata yoksa ve cevap alındıysa, cevabın içindeki kayıtlar (Answer) döndürülüyor.
+
+Bu şekilde, DNS_Resolver fonksiyonu bir alan adı ve sorgu türü alarak bu bilgileri kullanarak DNS sorgusu yapar ve cevapları döndürür. 
+
+```go
+func RRToString(rr dns.RR) string {
+	switch rr := rr.(type) {
+	case *dns.A:
+		return fmt.Sprintf("Domain: %s\nTTL:%d\nClass: %s\nQuery Type: A\nIP Address: %s\n",
+			rr.Hdr.Name, rr.Hdr.Ttl, dns.Class(rr.Hdr.Class).String(), rr.A.String())
+	default:
+		return "Unknown record type"
+	}
+}
+```
+
+----- ENGLISH -----
+
+1. func RRToString(rr dns.RR) string {: This line defines the RRToString function. This function will take a DNS record (of type dns.RR) and return its information as text.
+
+2. switch rr := rr.(type) {: This line uses a switch statement to perform different operations depending on the type of the variable rr.
+
+3. case *dns.A:: If the variable rr is of type dns.A, execute the following block.
+
+4. return fmt.Sprintf("Domain: %s\nTTL:%d\nClass: %s\nQuery Type: A\nIP Address: %s\n",
+rr.Hdr.Name, rr.Hdr.Ttl, dns.Class(rr.Hdr.Class).String(), rr.A.String()): In this line, the information of the record of type dns.A is formatted and returned as text. Domain name, TTL (Time to Live), Class, Query Type and IP Address information are generated as text.
+
+5. default:: If the variable rr is of another type, run the following block.
+
+6. return "Unknown record type": This line returns "Unknown record type" for an unknown record type.
+
+In this way, the RRToString function takes a DNS record and returns the relevant information as text according to the type of the record.
+
+
+----- TÜRKÇE -----
+
+1. func RRToString(rr dns.RR) string {: Bu satırda, RRToString fonksiyonu tanımlanıyor. Bu fonksiyon, bir DNS kaydı (dns.RR türünde) alarak bu kaydın bilgilerini bir metin olarak döndürecek.
+
+2. switch rr := rr.(type) {: Bu satırda, rr değişkeninin türüne göre farklı işlemler yapmak için bir switch ifadesi kullanılıyor.
+
+3. case *dns.A:: Eğer rr değişkeni bir dns.A türünde ise aşağıdaki bloğu çalıştır.
+
+4. return fmt.Sprintf("Domain: %s\nTTL:%d\nClass: %s\nQuery Type: A\nIP Address: %s\n",
+rr.Hdr.Name, rr.Hdr.Ttl, dns.Class(rr.Hdr.Class).String(), rr.A.String()): Bu satırda, dns.A türündeki kaydın bilgileri formatlanarak bir metin olarak döndürülüyor. Domain adı, TTL (Time to Live), Sınıf (Class), Sorgu Türü (Query Type) ve IP Adresi bilgileri metin olarak oluşturuluyor.
+
+5. default:: Eğer rr değişkeni başka bir türde ise aşağıdaki bloğu çalıştır.
+
+6. return "Unknown record type": Bu satırda, bilinmeyen bir kayıt türü için "Unknown record type" metni döndürülüyor.
+
+Bu şekilde, RRToString fonksiyonu bir DNS kaydını alarak bu kaydın türüne göre ilgili bilgileri metin olarak döndürüyor. 
+
+```go
+func main() {
+	var domain string
+	fmt.Printf("Enter a domain : ")
+	fmt.Scanln(&domain)
+
+	answers := DNS_Resolver(domain, dns.TypeA)
+
+	for _, answer := range answers {
+		fmt.Printf(RRToString(answer))
+	}
+
+}
+```
+
+----- ENGLISH -----
+
+1. func main() {: This line defines the main function. This function is the entry point of the program.
+
+2. var domain string: This line defines a string variable called domain. This variable will hold the domain name entered by the user.
+
+3. fmt.Printf("Enter a domain : "): This line prints a message asking the user to enter a domain name.
+
+4. fmt.Scanln(&domain): This line reads the domain name entered by the user into the domain variable.
+
+5. answers := DNS_Resolver(domain, dns.TypeA): This line calls the DNS_Resolver function to retrieve the DNS records (type A records) of the entered domain name and assigns these records to the answers variable.
+
+6. for _, answer := range answers {: On this line, run the following block for each record in the answers array.
+
+7. fmt.Printf(RRToString(answer)): This line calls the RRToString function to convert each DNS record to text format and prints the output to the screen.
+
+In this way, the main function takes a domain name from the user, parses the DNS records for that domain name and prints them to the screen. 
+
+
+----- TÜRKÇE ------
+
+1. func main() {: Bu satırda, main fonksiyonu tanımlanıyor. Bu fonksiyon programın giriş noktasıdır.
+
+2. var domain string: Bu satırda, domain adında bir string değişken tanımlanıyor. Bu değişken kullanıcı tarafından girilen domain adını tutacak.
+
+3. fmt.Printf("Enter a domain : "): Bu satırda, kullanıcıdan bir domain adı girmesini isteyen bir mesaj yazdırılıyor.
+
+4. fmt.Scanln(&domain): Bu satırda, kullanıcının girdiği domain adını domain değişkenine okuyarak atıyor.
+
+5. answers := DNS_Resolver(domain, dns.TypeA): Bu satırda, DNS_Resolver fonksiyonunu çağırarak girilen domain adına ait DNS kayıtlarını (A tipi kayıtlar) alıyor ve bu kayıtları answers değişkenine atıyor.
+
+6. for _, answer := range answers {: Bu satırda, answers dizisindeki her bir kayıt için aşağıdaki bloğu çalıştır.
+
+7. fmt.Printf(RRToString(answer)): Bu satırda, her bir DNS kaydını metin formatına dönüştürmek için RRToString fonksiyonunu çağırıp çıktısını ekrana yazdırıyor.
+
+Bu şekilde, main fonksiyonu kullanıcıdan bir domain adı alarak bu domain adına ait DNS kayıtlarını çözümleyip ekrana yazdırıyor. 
