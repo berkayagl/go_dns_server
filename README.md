@@ -94,11 +94,14 @@ func dns_resolver(domain string, queryType uint) []dns.RR {
 	client := &dns.Client{Timeout: 10 * time.Second}
 }
 ```
+- msg := new(dns.Msg): This command creates a new DNS (Domain Name System) message. DNS messages are used to help computers on the internet resolve IP addresses to domain names.
 
 - msg.SetQuestion(dns.Fqdn(domain), uint16(queryType)): This line sets a question for the DNS request.
   The dns.Fqdn(domain) function formats the domain exactly, making it suitable for a DNS query.
   uint16(queryType) converts it to an unsigned integer value representing the query type.
 
-- msg.RecursionDesired = true: Bu satırda, DNS sunucudan rekürsif bir yanıt almak istediğimizi belirtir. Yani, sunucunun kendi veritabanında arayıp sonuç döndürmesi gerekmektedir.
+- msg.RecursionDesired = true: This line indicates that we want a recursive response from the DNS server. That is, the server should search its own database and return results.
+
+- client := &dns.Client{Timeout: 10 * time.Second}: This line creates the DNS client. The Timeout: 10 * time.Second parameter allows the request to timeout if we don't receive a response for 10 seconds.
 
 
