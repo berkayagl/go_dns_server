@@ -201,58 +201,6 @@ rr.Hdr.Name, rr.Hdr.Ttl, dns.Class(rr.Hdr.Class).String(), rr.A.String()): Bu sa
 
 Bu şekilde, RRToString fonksiyonu bir DNS kaydını alarak bu kaydın türüne göre ilgili bilgileri metin olarak döndürüyor. 
 
-```go
-func main() {
-	var domain string
-	fmt.Printf("Enter a domain : ")
-	fmt.Scanln(&domain)
-
-	answers := DNS_Resolver(domain, dns.TypeA)
-
-	for _, answer := range answers {
-		fmt.Printf(RRToString(answer))
-	}
-
-}
-```
-
------ ENGLISH -----
-
-1. func main() {: This line defines the main function. This function is the entry point of the program.
-
-2. var domain string: This line defines a string variable called domain. This variable will hold the domain name entered by the user.
-
-3. fmt.Printf("Enter a domain : "): This line prints a message asking the user to enter a domain name.
-
-4. fmt.Scanln(&domain): This line reads the domain name entered by the user into the domain variable.
-
-5. answers := DNS_Resolver(domain, dns.TypeA): This line calls the DNS_Resolver function to retrieve the DNS records (type A records) of the entered domain name and assigns these records to the answers variable.
-
-6. for _, answer := range answers {: On this line, run the following block for each record in the answers array.
-
-7. fmt.Printf(RRToString(answer)): This line calls the RRToString function to convert each DNS record to text format and prints the output to the screen.
-
-In this way, the main function takes a domain name from the user, parses the DNS records for that domain name and prints them to the screen. 
-
-
------ TÜRKÇE ------
-
-1. func main() {: Bu satırda, main fonksiyonu tanımlanıyor. Bu fonksiyon programın giriş noktasıdır.
-
-2. var domain string: Bu satırda, domain adında bir string değişken tanımlanıyor. Bu değişken kullanıcı tarafından girilen domain adını tutacak.
-
-3. fmt.Printf("Enter a domain : "): Bu satırda, kullanıcıdan bir domain adı girmesini isteyen bir mesaj yazdırılıyor.
-
-4. fmt.Scanln(&domain): Bu satırda, kullanıcının girdiği domain adını domain değişkenine okuyarak atıyor.
-
-5. answers := DNS_Resolver(domain, dns.TypeA): Bu satırda, DNS_Resolver fonksiyonunu çağırarak girilen domain adına ait DNS kayıtlarını (A tipi kayıtlar) alıyor ve bu kayıtları answers değişkenine atıyor.
-
-6. for _, answer := range answers {: Bu satırda, answers dizisindeki her bir kayıt için aşağıdaki bloğu çalıştır.
-
-7. fmt.Printf(RRToString(answer)): Bu satırda, her bir DNS kaydını metin formatına dönüştürmek için RRToString fonksiyonunu çağırıp çıktısını ekrana yazdırıyor.
-
-Bu şekilde, main fonksiyonu kullanıcıdan bir domain adı alarak bu domain adına ait DNS kayıtlarını çözümleyip ekrana yazdırıyor. 
-
 # Dns Server
 
 ```go
