@@ -33,7 +33,7 @@ func DNS_Resolver(domain string, queryType uint16) []dns.RR {
 func RRToString(rr dns.RR) string {
 	switch rr := rr.(type) {
 	case *dns.A:
-		return fmt.Sprintf("Domain: %s\nTTL:%d\nClass: %s\nQuery Type: A\nIP Address: %s\n",
+		return fmt.Sprintf("Domain: %s\nTTL: %d\nClass: %s\nQuery Type: A\nIP Address: %s\n",
 			rr.Hdr.Name, rr.Hdr.Ttl, dns.Class(rr.Hdr.Class).String(), rr.A.String())
 	default:
 		return "Unknown record type!"
